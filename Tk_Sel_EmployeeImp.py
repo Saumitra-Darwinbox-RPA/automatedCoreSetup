@@ -23,13 +23,12 @@ import pandas as pd
 from datetime import datetime
 from tkinter import filedialog,ttk
 
-'''
-To Create Employee Impor and upload it
-'''
 
 
 Time_Now = datetime.now()
 
+#pyi-makespec Tk_Sel_EmployeeImp.py --onefile --noconsole --add-binary "driver\chromedriver.exe;driver\" --add-data "Img\Dbox4.png;Img\"  --name Employee_Import_v1.1
+#pyinstaller --clean Employee_Import_v1.1.spec
 
 # ------------------------------------ CSV upload ---------------------------------------
 
@@ -377,7 +376,7 @@ root_main  = tk.Tk()
 
 root_main.title('Employee_Import')
 
-root_main.geometry('400x350+150+150')
+root_main.geometry('400x350+1160+150')
 
 root_main['bg'] = '#F8FAFA'
 
