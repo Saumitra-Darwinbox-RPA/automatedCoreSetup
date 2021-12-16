@@ -24,9 +24,24 @@ import datetime as datetime
 from datetime import timedelta
 import threading
 import multiprocessing
+import itertools
 
 #from Run_Macro import Load_excel_data
 
+
+''' 
+****************
+All the Files which are getting uploaded using this code are supposed to happen in sequence
+Business Unit, Division, Department Master, Department Mapping, Locations, Band, Job Level, Functional Area, Functional Area Mapping, Designation Name
+Designation, Grade in Designation, Designation Location
+&
+Files from the other file (Designation_Contr_Joblevel.py) can be uploaded parallely
+Cost Center, Location Type, City Type, Grade, Contribution Level
+****************
+'''
+
+
+''' Part of the three files of Core_DCT 1.5 which consists of multiprocessing'''
 
 '''
 Interface - Tkinter
@@ -198,7 +213,8 @@ def run_excel_macro():
         xl_app = xw.App(visible=False, add_book=False)
         wb = xl_app.books.open(filename1)
 
-        run_macro = wb.app.macro('New_Super_macro_v2.New_Super_macro_V2')
+        # This was updated according to the v36. Name of the Smacro is Consolidated macro now
+        run_macro = wb.app.macro('FinalMacro.ConsolidatedMacro')
         run_macro()
 
         wb.save()
@@ -317,6 +333,97 @@ try:
 except:
     pass
 
+# ---------------------------------- OpenpyXl to loop through Group Company ----------------------------------
+
+try:
+
+    wb=Workbook()
+
+    wb_path_GC="D:/Import Files/Create Group.xlsx"
+    wbk = openpyxl.load_workbook(wb_path_GC)
+    ws = wbk['Create Group']
+
+    # ----- Group Company name , column A loop ---------
+    Range_excel=ws['A2':'A1000']
+    GC_Name_list=[]
+
+    for cell in Range_excel: 
+        for x in cell:
+            if x.value != None:
+                GC_Name_list.append(x.value)
+            else:
+                pass
+    
+    print(x)
+
+except:
+    pass
+
+wb=Workbook()
+
+wb_path_GC="D:/Import Files/Create Group.xlsx"
+wbk = openpyxl.load_workbook(wb_path_GC)
+ws = wbk['Create Group']
+
+# ----- Group Company name , column A loop ---------
+Range_excel=ws['A2':'A1000']
+GC_Name_list=[]
+
+for cell in Range_excel: 
+    for Every_GC_name in cell:
+        if Every_GC_name.value != None:
+            GC_Name_list.append(Every_GC_name.value)
+        else:
+            pass
+
+# ----- Group Company short name , column A loop ---------
+
+Range_excel=ws['B2':'B1000']
+GC_name_shortname_list=[]
+
+for cell in Range_excel: 
+    for Every_GC_shortname in cell:
+        if Every_GC_shortname.value != None:
+            GC_name_shortname_list.append(Every_GC_shortname.value)
+        else:
+            pass
+
+# ----- Group Company City name , column A loop ---------
+
+Range_excel=ws['C2':'C1000']
+GC_City_name_list=[]
+
+for cell in Range_excel: 
+    for Every_GC_Cityname in cell:
+        if Every_GC_Cityname.value != None:
+            GC_City_name_list.append(Every_GC_Cityname.value)
+        else:
+            pass
+
+# ----- Group Company State name , column A loop ---------
+
+Range_excel=ws['D2':'D1000']
+GC_State_name_list=[]
+
+for cell in Range_excel: 
+    for Every_GC_StateName in cell:
+        if Every_GC_StateName.value != None:
+            GC_State_name_list.append(Every_GC_StateName.value)
+        else:
+            pass
+
+# ----- Group Company Country name , column A loop ---------
+
+Range_excel=ws['E2':'E1000']
+GC_Country_name_list=[]
+
+for cell in Range_excel: 
+    for Every_GC_CountryName in cell:
+        if Every_GC_CountryName.value != None:
+            GC_Country_name_list.append(Every_GC_CountryName.value)
+        else:
+            pass
+
 
 #Time_Now = datetime.now()
 
@@ -357,17 +464,7 @@ def resource_path_logo(relative_path_logo):
  #pyinstaller --clean Core_DCT_demo_thread.spec
 
 def on_open():
-    global driver
-    global url
-
-    if not driver:
-        print(os.path.dirname(__file__))
-        driver = selenium.webdriver.Chrome(resource_path1("/driver/chromedriver.exe"))
-        #driver2 = selenium.webdriver.Chrome(resource_path1("/driver/chromedriver.exe"))
-        url = WebLink.get()
-        driver.get(url)
-        driver.maximize_window()
-        #driver2.minimize_window()
+    pass
 
 
 def on_close():
@@ -380,8 +477,24 @@ def on_close():
 
 
 def UserLogin ():
+    pass
+
+  
+# --------------------- Access the Company Import Page and Upload----------------------------------
+
+def Upload_file_1():
 
     global driver
+    global url
+
+    if not driver:
+        print(os.path.dirname(__file__))
+        driver = selenium.webdriver.Chrome(resource_path1("/driver/chromedriver.exe"))
+        #driver = selenium.webdriver.Chrome(resource_path1("/driver/chromedriver.exe"))
+        url = WebLink.get()
+        driver.get(url)
+        driver.maximize_window()
+        #driver.minimize_window()
 
     # Admin's login
     driver.find_element_by_id("UserLogin_username").send_keys(username1.get())
@@ -413,45 +526,54 @@ def UserLogin ():
 
     # ------------------  Asking user if GC needs to be created. Answer == true, GC related input boxes will be visible else not visible -------------------
 
-    if UserGCQuestion == True:
-        
-        try:
+    if UserGCQuestion.get() == 1:
 
-            driver.get(WebLink.get() + '/settings/company')
+        driver.get(WebLink.get()+ '/settings/company')
 
-            #To clear the default valeus present in the form
-            driver.find_element_by_xpath('//*[@id="Tenants_tenant_name"]').clear()
-            driver.find_element_by_xpath('//*[@id="Tenants_tenant_name"]').send_keys(GC_name.get())
+        # Using Itertools to iterate over multiple list at a given time
+        # All the lists are columns representing respective columns present in the Create group excel
 
-            # driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_code"]').clear()
-            # driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_code"]').send_keys(Tenant_Code)
+        for (Every_GC_name_1,Every_GC_shortname_1,Every_GC_Cityname_1,Every_GC_StateName_1,Every_GC_CountryName_1) in itertools.zip_longest(GC_Name_list,GC_name_shortname_list,GC_City_name_list,GC_State_name_list,GC_Country_name_list):
 
-            driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_shortname"]').clear()
-            driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_shortname"]').send_keys(GC_shortName1.get())
+            try:
 
-            #time.sleep(5)
+                #To clear the default valeus present in the form
+                driver.find_element_by_xpath('//*[@id="Tenants_tenant_name"]').clear()
+                driver.find_element_by_xpath('//*[@id="Tenants_tenant_name"]').send_keys(Every_GC_name_1)
 
-            # TO find dropdown and then select the Country
-            #driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[6]/div[5]/div').click()
-            Sel = Select(driver.find_element_by_xpath('//*[@id="country_add"]'))
-            Sel.select_by_visible_text(GC_country1.get())
+                # driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_code"]').clear()
+                # driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_code"]').send_keys(Tenant_Code)
 
-            #State
-            driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[6]/div[6]/div/input').send_keys(GC_State1.get())
-            driver.implicitly_wait(20)
+                driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_shortname"]').clear()
+                driver.find_element_by_xpath('//*[@id="TenantProfile_tenant_shortname"]').send_keys(Every_GC_shortname_1)
 
-            #City
-            driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[7]/div[1]/div/input').send_keys(GC_city1.get())
-            driver.implicitly_wait(20)
+                #time.sleep(5)
 
-            # Save the information
-            driver.find_element_by_xpath('//*[@id="company_update_btn"]').click()
-            driver.implicitly_wait(30)
+                # TO find dropdown and then select the Country
+                #driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[6]/div[5]/div').click()
+                Sel = Select(driver.find_element_by_xpath('//*[@id="country_add"]'))
+                Sel.select_by_visible_text(Every_GC_CountryName_1)
+
+                #State
+                driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[6]/div[6]/div/input').send_keys(Every_GC_StateName_1)
+                driver.implicitly_wait(20)
+
+                #City
+                driver.find_element_by_xpath('//*[@id="manage-tenant-form"]/div[7]/div[1]/div/input').send_keys(Every_GC_Cityname_1)
+                driver.implicitly_wait(20)
+
+                # Save the information
+                driver.find_element_by_xpath('//*[@id="company_update_btn"]').click()
+                driver.implicitly_wait(30)
+                
+            except:
+                pass
             
-        except:
-            pass
+        
     else:
         pass
+
+    print(UserGCQuestion.get())
 
     # ------------------------- Storing aliases and clearing them ------------------------------
 
@@ -510,63 +632,10 @@ def UserLogin ():
     try:
         driver.find_element_by_xpath('//*[@id="leave_settings_create_btn"]').click()
     except:
-        pass   
-# --------------------- Access the Company Import Page and Upload----------------------------------
-
-def Upload_file_1():
+        pass 
 
     #Defining wait variable which can be used in wait.until    
     wait = WebDriverWait(driver, 30)
-
-    # Cost center
-
-    try:
-
-        time.sleep(4)
-        driver.get(WebLink.get() + '/Importnewclient/costCenters')
-        driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Cost_center)
-        driver.implicitly_wait(20)
-        element = wait.until(EC.element_to_be_clickable(((By.NAME,'upload'))))
-        time.sleep(4)
-        driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
-        #driver.find_element_by_name('upload').click()
-        driver.implicitly_wait(20)
-
-    except:
-        pass
-
-    # Location Type
-
-    try:
-
-        driver.get(WebLink.get() + '/Importnewclient/locationType')
-        driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Loc_type)
-        driver.implicitly_wait(20)
-        element = wait.until(EC.element_to_be_clickable(((By.NAME,'upload'))))
-        time.sleep(4)
-        driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
-        #driver.find_element_by_name('upload').click()
-        driver.implicitly_wait(20)
-
-    except:
-        pass
-
-    # City Type
-
-    try:
-
-        driver.get(WebLink.get() + '/Importnewclient/cityType')
-        driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(City_type)
-        driver.implicitly_wait(20)
-        element = wait.until(EC.element_to_be_clickable(((By.NAME,'upload'))))
-        time.sleep(4)
-        driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
-        #driver.find_element_by_name('upload').click()
-        driver.implicitly_wait(20)
-
-    except:
-        pass
-
 
     # Business unit
 
@@ -626,7 +695,7 @@ def Upload_file_1():
         time.sleep(4)
         driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
         #driver.find_element_by_name('upload').click()
-        driver.implicitly_wait(20)
+        driver.implicitly_wait(20)  
 
     except:
         pass
@@ -652,8 +721,11 @@ def Upload_file_1():
     try:
 
         for i in bnd_dt:
+
+            #settings/company/bands
+
             wait = WebDriverWait(driver, 30)
-            driver.get('https://training2.darwinbox.in/settings/company/bands')
+            driver.get(WebLink.get() + '/settings/company/bands')
             time.sleep(4)
             driver.find_element_by_xpath('/html/body/div[2]/div/section/div/div/div[4]/div/a[1]').click()
             driver.find_element_by_xpath('//*[@id="UserBand_band_name"]').send_keys(i)
@@ -664,6 +736,38 @@ def Upload_file_1():
     except:
         pass
 
+    
+    # Job level
+
+    if CheckBox_Joblevel_var.get() == 1:
+
+        try:
+
+            driver.get(WebLink.get() + '/Importnewclient/jobLevel')
+            time.sleep(3)
+            driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(JobLevel_upload)
+            driver.implicitly_wait(20)
+            
+            time.sleep(4)
+            driver.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
+            #driver.find_element_by_name('upload').click()
+            driver.implicitly_wait(20)
+
+            # Earlier If JOb level == o then add Grade in designation.
+            # Now keeping the same logic but moving grade indesignation at the last
+            
+
+        except:
+            pass
+
+    else:
+        pass
+
+    
+    
+    #Designation_name = "D:/Import Files/Designation Name.csv"
+    #Designation = "D:/Import Files/Designation.csv"
+
     # Functional area
     
     try:
@@ -671,7 +775,6 @@ def Upload_file_1():
         driver.get(WebLink.get() + '/Importnewclient/functionalArea')
         driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Func_area)
         driver.implicitly_wait(20)
-        element = wait.until(EC.element_to_be_clickable(((By.NAME,'upload'))))
         time.sleep(4)
         driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
         #driver.find_element_by_name('upload').click()
@@ -687,7 +790,6 @@ def Upload_file_1():
         driver.get(WebLink.get() + '/Importnewclient/famapping')
         driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Func_area_mapping)
         driver.implicitly_wait(20)
-        element = wait.until(EC.element_to_be_clickable(((By.NAME,'upload'))))
         time.sleep(4)
         driver.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
         #driver.find_element_by_name('upload').click()
@@ -696,9 +798,204 @@ def Upload_file_1():
     except:
         pass
 
+    # Designation Name
+
+    try:
+
+        driver.get(WebLink.get() + '/import/asyncImports/type/designationname')
+        driver.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Designation_name)
+        driver.implicitly_wait(20)
+        time.sleep(4)
+        driver.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
     
-    #except:
-        #pass
+        driver.implicitly_wait(20)
+
+        #messagebox.showinfo("Wait for 15 mins","Please do not close the chrome browser, executable is waiting for the designation to be saved\r\n\r\nChrome window will get minimized automatically and once the file is uploaded it will be maximised and then remaining CSVs will be uploaded.")
+
+        #driver.minimize_window()
+        # time.sleep(1000)
+        # driver.maximize_window() 
+
+    except:
+        pass
+
+    #  
+    # Designation Name While loop to check if the Import is completed.
+    # After every 4 mins page will be refereshed and will try to find 'Import completed' text
+    # Once found will maximise the window and start uploading Designation CSV (next in line) 
+    # 
+
+    timeout = 1000
+    timeout_start = time.time()
+
+    while time.time() < timeout_start + timeout:
+
+        try: 
+
+            driver.get(WebLink.get() + '/import/alluploads') 
+            driver.minimize_window()
+            time.sleep(4)
+            
+            try:
+                driver.find_element_by_xpath("/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[5][contains(text(),'Import Completed')]")
+                print("found it")
+                driver.maximize_window()
+
+            except:
+                driver.find_element_by_xpath("/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[5][contains(text(),'N.A')]")
+                print("found it")
+                driver.maximize_window()
+            
+            try:
+                driver.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[7]/a').click()
+                print("Downloaded")
+                
+
+            except:
+                pass
+
+            break
+
+        except:
+
+            time.sleep(120)
+            print("Still looping")
+
+    
+    # Designation 
+
+    # While loop to check if the Import is completed.
+    # After every 4 mins page will be refereshed and will try to find 'Import completed' text
+    # Once found will maximise the window and start uploading Designation Location (next in line)
+    try:
+        driver.maximize_window()
+
+        driver.get(WebLink.get() + '/import/asyncImports/type/designation')
+        driver.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Designation)
+        driver.implicitly_wait(20)
+        time.sleep(4)
+        driver.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
+        driver.implicitly_wait(20)
+
+    except:
+        pass
+
+
+    try:
+
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[1]/td[1]/select').send_keys(Dept)
+        driver.implicitly_wait(3)
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[2]/td[1]/select').send_keys(Desg)
+        driver.implicitly_wait(3)
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[3]/td[1]/select').send_keys(Desg_code)
+        driver.implicitly_wait(3)
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[4]/td[1]/select').send_keys(Numb_of_position)
+        driver.implicitly_wait(3)
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[8]/td[1]/select').send_keys(Not_period)
+        driver.implicitly_wait(3)
+        driver.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[10]/td[1]/select').send_keys(Funct_area)
+        time.sleep(2)
+
+        driver.execute_script("window.scrollTo(0, -500)") 
+        time.sleep(5)
+
+        driver.find_element_by_xpath('//*[@id="col_map"]/div/input').click()
+
+        # messagebox.showinfo("Wait for 15 mins","Please do not close the chrome browser, executable is waiting for the designation to be saved\r\n\r\nChrome window will get minimized automatically and once the file is uploaded it will be maximised and then remaining CSVs will be uploaded.")
+
+        #driver.minimize_window()
+
+    except:
+        pass
+
+    while time.time() < timeout_start + timeout:
+
+        try: 
+
+            driver.get(WebLink.get() + '/import/alluploads') 
+            driver.minimize_window()
+            time.sleep(4)
+
+            try:
+                driver.find_element_by_xpath("/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[5][contains(text(),'Import Completed')]")
+                print("found it")
+                driver.maximize_window()
+
+            except:
+
+                driver.find_element_by_xpath("/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[5][contains(text(),'N.A')]")
+                print("found it")   
+                driver.maximize_window()
+            
+            try:
+
+                driver.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[5]/table/tbody/tr[1]/td[7]/a').click()
+                print("Downloaded")
+
+            except:
+                pass
+
+            break
+
+        except:
+
+            time.sleep(120)
+            print("Still Looping")
+
+    # Designation Location 
+
+    try:
+
+        driver.maximize_window()
+        
+        time.sleep(4)
+        driver.get(WebLink.get() + '/import/designationLocation')
+        driver.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Designation_loc)
+        time.sleep(4)
+        driver.implicitly_wait(20)
+
+    #Upload Click --- not required as this page doesnt have a submit or next button present
+
+    except:
+        pass
+
+
+    if CheckBox_Joblevel_var.get() == 0:
+        
+        try:
+
+            driver.get(WebLink.get() + '/import/gradeimport')
+
+            time.sleep(3)
+
+            driver.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Grade_in_designation)
+            driver.implicitly_wait(20)
+            driver.find_element_by_xpath('//*[@id="has_header_fields"]').click()
+            
+            time.sleep(4)
+            driver.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[1]/div/div/div[6]/form/div/input').click()
+            #driver.find_element_by_name('upload').click()
+            driver.implicitly_wait(20)
+
+            messagebox.showinfo(title="Select columns",message="Please select appropriate columns and then click OK")
+
+            time.sleep(3)
+
+            driver.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div/div/div/div[6]/form/div/input').click()
+            time.sleep(3)
+
+            try:
+                driver.execute_script("window.scrollTo(0, 300)") 
+                driver.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[4]/input[1]').click()
+                time.sleep(3)
+            except:
+                pass
+
+        except:
+            pass
+
+    else:
+        pass
 
 
     # ----------------------- Aliases which was deleted earlier will be added again and saved ------------------------
@@ -757,7 +1054,7 @@ def Help_window():
 # ---------------------------------------------- Tkinter -------------------------------------------------------
 # --------------------------------------------------------------------------------------------------------------
 
-InfoForTHeUser ="Please make sure that you have used the Automated DCT to take the export and the exported CSVs are present in 'D: Import files' folder. \r\n\r\nIf Client's GC information is added then kindly select 'No' or select 'Yes' if you want to change/update the GC info \r\n \r\n \r\n Some points to remeber -> \r\n\r\n 1. Please make sure that you are adding the entire instance link. that is make sure to include 'https://' also \r\n\r\n 2. Please add the correct user ID and Password \r\n\r\n 3. 'Delays' are added purposely so as to let the website load all its elements. \r\n\r\n 4. Please select Contribution and Job level checkboxes if you want to upload them. Note : If user selects not to upload Job level then Grade in designation csv will be uploaded. \r\n \r\n\r\n Information about buttons -> \r\n 1. Selenium Open -> Will open a new Google chrome window and maximize it automatically \r\n\r\n 2. Login & Admin -> User ID and Password added will be used to login and switch from employee's profile to Admin's \r\n\r\n  3. Upload Files  -> CSV exports from D -> Import files folder will be uploaded \r\n\r\n 4. Selenium close -> will close this program\r\n"
+InfoForTHeUser ="Please make sure that you have used the Automated DCT excel file to take the export and the exported CSVs are present in 'D: Import files' folder. \r\n\r\nIf Client's GC information is added already then kindly select 'No' or select 'Yes' if you want to change/update the GC info \r\n \r\n \r\nSome points to remeber -> \r\n\r\n1. Please make sure that you are adding the entire instance link. that is make sure to include 'https://' also \r\n\r\n2. Please add the correct user ID and Password \r\n\r\n3. 'Delays' are added purposely so as to let the website load all its elements. \r\n\r\n4. Please select Job level checkboxes if you want to upload them. Note : If user selects not to upload Job level then Grade in designation csv will be uploaded. \r\n \r\n\r\nInformation about buttons -> \r\n\r\n1. Upload Files  -> CSV exports from D -> Import files folder will be uploaded \r\n\r\n2. Chrome close -> will close this program\r\n"
 
 # --------------------------------------------------- Added new root which represents Designation upload ---------------------------------------
 
@@ -790,7 +1087,7 @@ def Main_root_window():
 
     root.title('Core_DCT')
     #width then hight
-    root.geometry('995x640+150+150')
+    root.geometry('995x590+150+150')
 
     #root['bg'] = '#5252ff'
     root['bg'] = '#F8FAFA'
@@ -799,77 +1096,30 @@ def Main_root_window():
     myFont = font.Font(family='Satisfy',size=9,weight='bold')
     myFont2 = font.Font(family='Playfair Display',size=9)
 
-    UserGCQuestion = messagebox.askyesno(title="Group company",message="Do you want to Add / update GC information?")
+    tk.Label(root,text="Client Instance / Website Link",bg='#ADD8E6',fg='black',width=28).grid(row=3,column=1,padx=10,pady=10)
+    WebLink = StringVar()
+    name1 = tk.Entry(root, textvariable=WebLink,width=80,bg='#F5F5F5',font=myFont2)
+    name1.grid(row=3,column=2,padx=5,pady=10,columnspan=3)
 
+    tk.Label(root,text="User ID / Email ID",activebackground='white',width=28,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=1,padx=10,pady=5)
+    username1 = StringVar()
+    name2 = tk.Entry(root, textvariable=username1,width=31,bg='#F5F5F5')
+    name2.grid(row=4,column=2,padx=5,pady=10)
 
-    if UserGCQuestion == True :
-
-        tk.Label(root,text="Client Instance / Website Link",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=3,column=1,padx=10,pady=5)
-        WebLink = StringVar()
-        name1 = tk.Entry(root, textvariable=WebLink,width=30,bg='#F5F5F5')
-        name1.grid(row=3,column=2,padx=5,pady=5)
-
-        tk.Label(root,text="User ID / Email ID",activebackground='white',width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=3,column=3,padx=10,pady=3)
-        username1 = StringVar()
-        name2 = tk.Entry(root, textvariable=username1,width=30,bg='#F5F5F5')
-        name2.grid(row=3,column=4,padx=5,pady=3)
-
-        tk.Label(root,text="Password",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=1,padx=10,pady=3)
-        password1 = StringVar()
-        name3 = tk.Entry(root, textvariable=password1,show="*",width=30,bg='#F5F5F5')
-        name3.grid(row=4,column=2,padx=5,pady=3)
-
-        tk.Label(root,text="GC Name",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=3,padx=10,pady=3)
-        GC_name = StringVar()
-        name4 = tk.Entry(root, textvariable=GC_name,width=30,bg='#F5F5F5')
-        name4.grid(row=4,column=4,padx=5,pady=3)
-
-        tk.Label(root,text="GC Shortname",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=5,column=1,padx=10,pady=3)
-        GC_shortName1 = StringVar()
-        name6 = tk.Entry(root, textvariable=GC_shortName1,width=30,bg='#F5F5F5')
-        name6.grid(row=5,column=2,padx=5,pady=3)
-
-        tk.Label(root,text="GC Country",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=5,column=3,padx=10,pady=3)
-        GC_country1 = StringVar()
-        name6 = tk.Entry(root, textvariable=GC_country1,width=30,bg='#F5F5F5')
-        name6.grid(row=5,column=4,padx=5,pady=3)
-
-        tk.Label(root,text="GC State",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=6,column=1,padx=10,pady=3)
-        GC_State1 = StringVar()
-        name7 = tk.Entry(root, textvariable=GC_State1,width=30,bg='#F5F5F5')
-        name7.grid(row=6,column=2,padx=5,pady=3)
-
-        tk.Label(root,text="GC City",width=25,bg='#ADD8E6',fg='black',font=myFont2).grid(row=6,column=3,padx=10,pady=3)
-        GC_city1 = StringVar()
-        name8 = tk.Entry(root, textvariable=GC_city1,width=30,bg="#F5F5F5")
-        name8.grid(row=6,column=4,padx=5,pady=3)
-
-        
-    else :
-
-        tk.Label(root,text="Client Instance / Website Link",bg='#ADD8E6',fg='black').grid(row=3,column=1,padx=10,pady=10)
-        WebLink = StringVar()
-        name1 = tk.Entry(root, textvariable=WebLink,width=80,bg='#F5F5F5',font=myFont2)
-        name1.grid(row=3,column=2,padx=5,pady=10,columnspan=3)
-
-        tk.Label(root,text="User ID / Email ID",activebackground='white',width=20,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=1,padx=10,pady=5)
-        username1 = StringVar()
-        name2 = tk.Entry(root, textvariable=username1,width=28,bg='#F5F5F5')
-        name2.grid(row=4,column=2,padx=5,pady=10)
-
-        tk.Label(root,text="Password",width=20,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=3,padx=10,pady=5)
-        password1 = StringVar()
-        name3 = tk.Entry(root, textvariable=password1,show="*",width=28,bg='#F5F5F5')
-        name3.grid(row=4,column=4,padx=5,pady=10)
+    tk.Label(root,text="Password",width=20,bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=3,padx=10,pady=5)
+    password1 = StringVar()
+    name3 = tk.Entry(root, textvariable=password1,show="*",width=31,bg='#F5F5F5')
+    name3.grid(row=4,column=4,padx=5,pady=10)
 
 
     b1 = tk.Label(root,text="(Note: Ensure you provide all the required inputs)",width=110,background='#F8FAFA',fg='black',font=myFont).grid(row=8,column=1,padx=10,pady=10,columnspan=4)
 
-    b2 = tk.Button(root, text='01. Select File', command=select_file,width=40,relief=RAISED,activebackground='Grey',background='#ADD8E6',fg='black',font=myFont2).grid(row=9,column=1,padx=10,pady=5,columnspan=4)
+    b2 = tk.Button(root, text='01. Select File', command=select_file,width=40,relief=RAISED,activebackground='Grey',background='#ADD8E6',fg='black',font=myFont2).grid(row=9,column=1,padx=10,pady=5,columnspan=2)
 
-    b11 = tk.Button(root, text='02. Check Errors', command=run_excel_macro_validation,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=10,column=1,padx=10,pady=5,columnspan=2)
-    b12 = tk.Button(root, text='03. Show Validation Errors', command=EntireTree,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=10,column=3,padx=10,pady=5,columnspan=2)
-    b13 = tk.Button(root, text='04. Resolve All Errors', command=run_validation_Allresolved_macro,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=11,column=1,padx=10,pady=10,columnspan=4)
+    b11 = tk.Button(root, text='02. Check Errors', command=run_excel_macro_validation,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=9,column=3,padx=10,pady=5,columnspan=2)
+
+    b12 = tk.Button(root, text='03. Show Validation Errors', command=EntireTree,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=10,column=1,padx=10,pady=5,columnspan=2)
+    b13 = tk.Button(root, text='04. Resolve All Errors', command=run_validation_Allresolved_macro,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=10,column=3,padx=10,pady=10,columnspan=2)
 
     #Validate data button -> validation ->Error report
 
@@ -877,24 +1127,39 @@ def Main_root_window():
 
     b4 = tk.Label(root,text="",bg='#F8FAFA').grid(row=13,column=1,padx=10,pady=1,columnspan=4)
 
-    b5 = tk.Button(root, text='06. Chrome Open', command=on_open,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=14,column=1,padx=10,pady=5,columnspan=4)
+    #CheckBox_Contribution_var = IntVar()
+    #CheckBox_Contribution1 = tk.Checkbutton(root, text="Contribution Level, Applicable?", variable=CheckBox_Contribution_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2).grid(row=14,column=1,padx=10,pady=10,columnspan=2)
 
-    b6 = tk.Button(root, text='07. Login & Admin', command=UserLogin,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=15,column=1,padx=10,pady=5,columnspan=4)
+    UserGCQuestion = IntVar()
+    CheckBox_GC3 = tk.Checkbutton(root, text="Create Group?", variable=UserGCQuestion, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2,width=40).grid(row=14,column=1,padx=10,pady=10,columnspan=2)
+
+    CheckBox_Joblevel_var= IntVar()
+    CheckBox_Job3 = tk.Checkbutton(root, text="Job Level, Applicable?", variable=CheckBox_Joblevel_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2,width=40).grid(row=14,column=3,padx=10,pady=10,columnspan=2)
+
+    #UserGCQuestion = messagebox.askyesno(title="Group company",message="Do you want to Add / update GC information?")
+
+    #b5 = tk.Button(root, text='06. Chrome Open', command=on_open,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=14,column=1,padx=10,pady=5,columnspan=4)
+
+    #b6 = tk.Button(root, text='07. Login & Admin', command=UserLogin,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=15,column=1,padx=10,pady=5,columnspan=4)
 
     #b3 = tk.Button(root, text='Account details', command=GC_Details,width=40).grid(row=7,column=1,padx=10,pady=5,columnspan=3)
 
     #b7 = tk.Button(root, text='08. Upload Designation', command=Open_designation_window,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=16,column=1,padx=10,pady=5,columnspan=2)
 
-    b8 = tk.Button(root, text='08. Upload Files', command=Upload_file_1,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=16,column=1,padx=10,pady=5,columnspan=4)
+    b8 = tk.Button(root, text='Upload Files', command=Upload_file_1,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=15,column=1,padx=10,pady=10,columnspan=4)
 
     #b5 = tk.Button(root, text='Upload File_2', command=upload_file_2,width=40).grid(row=9,column=1,padx=10,pady=5,columnspan=3)
 
-    b9 = tk.Button(root, text='09. Chrome Close', command=on_close,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=17,column=1,padx=10,pady=5,columnspan=4)
+    b9 = tk.Button(root, text='Close Chrome Window', command=on_close,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=16,column=1,padx=10,pady=5,columnspan=4)
 
-    b10 = tk.Button(root, text='10. Help', command=Help_window,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=18,column=1,padx=10,pady=15,columnspan=4)
+    b10 = tk.Button(root, text='Help', command=Help_window,width=40,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black',font=myFont2).grid(row=17,column=1,padx=10,pady=15,columnspan=4)
 
     #root3 = tk.Tk()
 
     root.mainloop()
+
+
+
+
 
 
