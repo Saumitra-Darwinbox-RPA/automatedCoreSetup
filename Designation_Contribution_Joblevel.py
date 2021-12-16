@@ -22,7 +22,7 @@ import xlwings as xw
 import pandas as pd
 
 
-
+''' Part of the three files of Core_DCT 1.5 which consists of multiprocessing'''
 
 
 
@@ -138,13 +138,15 @@ def upload_files2():
 
     time.sleep(5)
 
-    # Grade
+    
+    # Cost center
 
     try:
-        driver2.get(WebLink1.get() + '/Importnewclient/grade')
-        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Grade_upload)
+
+        time.sleep(4)
+        driver2.get(WebLink1.get() + '/Importnewclient/costCenters')
+        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Cost_center)
         driver2.implicitly_wait(20)
-        
         time.sleep(4)
         driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
         #driver2.find_element_by_name('upload').click()
@@ -153,10 +155,52 @@ def upload_files2():
     except:
         pass
 
-    
-    # Contribution level
-    # If user selects to add contribution level then this will run
-    # is_selected will check if the checkbox is already 'checked', else will go ahead and select the option
+    # Location Type
+
+    try:
+
+        driver2.get(WebLink1.get() + '/Importnewclient/locationType')
+        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Loc_type)
+        driver2.implicitly_wait(20)
+        time.sleep(4)
+        driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
+        #driver2.find_element_by_name('upload').click()
+        driver2.implicitly_wait(20)
+
+    except:
+        pass
+
+    # City Type
+
+    try:
+
+        driver2.get(WebLink1.get() + '/Importnewclient/cityType')
+        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(City_type)
+        driver2.implicitly_wait(20)
+        time.sleep(4)
+        driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
+        #driver2.find_element_by_name('upload').click()
+        driver2.implicitly_wait(20)
+
+    except:
+        pass
+
+    # Grade
+
+    try:
+
+        driver2.get(WebLink1.get() + '/Importnewclient/Grade')
+        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Grade_upload)
+        driver2.implicitly_wait(20)
+        time.sleep(4)
+        driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[1]/div[1]/div/div/form/input[2]').click()
+        #driver2.find_element_by_name('upload').click()
+        driver2.implicitly_wait(20)
+
+    except:
+        pass
+
+    # Contribution Level
 
     if CheckBox_Contribution_var.get() == 1:
 
@@ -191,148 +235,6 @@ def upload_files2():
 
     else:
         pass
-
-    
-    # Job level
-
-    if CheckBox_Joblevel_var == 1:
-
-        try:
-
-            driver2.get(WebLink1.get() + '/Importnewclient/jobLevel')
-            time.sleep(3)
-            driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(JobLevel_upload)
-            driver2.implicitly_wait(20)
-            
-            time.sleep(4)
-            driver2.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
-            #driver2.find_element_by_name('upload').click()
-            driver2.implicitly_wait(20)
-
-        except:
-            pass
-
-    else:
-
-        try:
-
-            driver2.get(WebLink1.get() + '/import/gradeimport')
-            time.sleep(3)
-            driver2.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Grade_in_designation)
-            driver2.implicitly_wait(20)
-
-            driver2.find_element_by_xpath('//*[@id="has_header_fields"]').click()
-
-            
-            time.sleep(4)
-            driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[1]/div/div/div[6]/form/div/input').click()
-            #driver2.find_element_by_name('upload').click()
-            driver2.implicitly_wait(20)
-
-            
-            driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div/div/div/div[9]/div[2]/div[5]/div/table/thead/tr/th[1]/select').send_keys('Designation Code')
-            driver2.implicitly_wait(20)
-            driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div/div/div/div[9]/div[2]/div[5]/div/table/thead/tr/th[2]/select').send_keys('Grade')
-            driver2.implicitly_wait(20)
-
-            time.sleep(3)
-
-            driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div/div/div/div[6]/form/div/input').click()
-            time.sleep(3)
-
-            try:
-                driver2.execute_script("window.scrollTo(0, 300)") 
-                driver2.find_element_by_xpath('/html/body/div[2]/div/section/div[2]/div[4]/input[1]').click()
-                time.sleep(3)
-            except:
-                pass
-
-
-        except:
-            pass
-
-    # Designation Name
-
-    try:
-
-        driver2.get(WebLink1.get() + '/import/asyncImports/type/designationname')
-        driver2.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Designation_name)
-        driver2.implicitly_wait(20)
-        time.sleep(4)
-        driver2.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
-        #driver2.find_element_by_name('upload').click()
-        driver2.implicitly_wait(20)
-
-        messagebox.showinfo("Wait for 15 mins","Please do not close the chrome browser, executable is waiting for the designation to be saved (15mins pause)\r\n\r\nChrome window will get minimized automatically and after 15 mins of wait it will be maximised and then remaining CSVs will be uploaded.")
-
-        # messagebox.showinfo("Please wait","By "+start_min1.time()+" this will be uploaded on the instance Please do not close the chrome browser, \r\n\r\nChrome window will get minimized automatically and at"+start_min1.time() + " it will be maximised and then remaining CSVs will be uploaded.")
-
-        driver2.minimize_window()
-        time.sleep(960)
-        driver2.maximize_window() 
-
-    except:
-        pass
-
-    # Designation 
-    try:
-        driver2.get(WebLink1.get() + '/import/asyncImports/type/designation')
-        driver2.find_element_by_xpath('//*[@id="upload_file[]"]').send_keys(Designation)
-        driver2.implicitly_wait(20)
-        time.sleep(4)
-        driver2.find_element_by_xpath('//*[@id="upload_import_file"]/div/input').click()
-        #driver2.find_element_by_name('upload').click()
-        driver2.implicitly_wait(20)
-
-    except:
-        pass
-
-    
-
-    #code to select from Deignation's drop down
-
-    try:
-
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[1]/td[1]/select').send_keys(Dept)
-        driver2.implicitly_wait(3)
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[2]/td[1]/select').send_keys(Desg)
-        driver2.implicitly_wait(3)
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[3]/td[1]/select').send_keys(Desg_code)
-        driver2.implicitly_wait(3)
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[4]/td[1]/select').send_keys(Numb_of_position)
-        driver2.implicitly_wait(3)
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[8]/td[1]/select').send_keys(Not_period)
-        driver2.implicitly_wait(3)
-        driver2.find_element_by_xpath('/html/body/div[4]/div/div[2]/table/tbody/tr[10]/td[1]/select').send_keys(Funct_area)
-        time.sleep(2)
-
-        driver2.execute_script("window.scrollTo(0, -500)") 
-        time.sleep(5)
-
-        driver2.find_element_by_xpath('//*[@id="col_map"]/div/input').click()
-
-        time.sleep(5)
-
-    except:
-        pass
-
-    
-
-    # Designation Location
-
-    try:
-
-        time.sleep(4)
-        driver2.get(WebLink1.get() + '/import/designationLocation')
-        driver2.find_element_by_xpath('//*[@id="csvdata"]').send_keys(Designation_loc)
-        time.sleep(4)
-        driver2.implicitly_wait(20)
-    
-    #Upload Click --- not required as this page doesnt have a submit or next button present
-
-    except:
-        pass
-
 
 
 def Help_window():
@@ -394,16 +296,16 @@ def Open_designation_window():
     name3.grid(row=3,column=2,padx=5,pady=3)
 
     CheckBox_Contribution_var = IntVar()
-    CheckBox_Contribution1 = tk.Checkbutton(root3, text="Contribution Level, Applicable?", variable=CheckBox_Contribution_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=1,padx=10,pady=10)
+    CheckBox_Contribution1 = tk.Checkbutton(root3, text="Contribution Level, Applicable?", variable=CheckBox_Contribution_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2).grid(row=4,column=1,padx=10,pady=10,columnspan=2)
 
-    CheckBox_Joblevel_var= IntVar()
-    CheckBox_Job3 = tk.Checkbutton(root3, text="Job Level, Applicable?", variable=CheckBox_Joblevel_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2,width=25).grid(row=4,column=2,padx=10,pady=10)
+    #CheckBox_Joblevel_var= IntVar()
+    #CheckBox_Job3 = tk.Checkbutton(root3, text="Job Level, Applicable?", variable=CheckBox_Joblevel_var, onvalue=1, offvalue=0,activebackground='blue',bg='#ADD8E6',fg='black',font=myFont2,width=25).grid(row=4,column=2,padx=10,pady=10)
 
     tk.Button(root3, text='Upload files', command=upload_files2,width=25,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black').grid(row=6,column=1,padx=10,pady=8,columnspan=2)
 
     tk.Button(root3, text='Close Chrome Window', command=on_close2,width=25,relief=RAISED,activebackground='Grey',bg='#ADD8E6',fg='black').grid(row=7,column=1,padx=8,pady=5,columnspan=2)
 
-    tk.Label(root3,text="To add Designation, Designation Name, Designation Location,\r Contribution, Job level / Grades and Grade in designation ",width=60,bg='#D0D3D4',fg='black').grid(row=8,column=1,padx=10,pady=10,columnspan=2)
+    tk.Label(root3,text="To add Cost Center, Location Type, City Type,\r Grade and Contribution level ",width=60,bg='#D0D3D4',fg='black').grid(row=8,column=1,padx=10,pady=10,columnspan=2)
 
     root3.mainloop()
 
